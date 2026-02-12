@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Menu, X, Globe, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/lib/i18n-context";
@@ -44,9 +45,15 @@ export function Navbar() {
             href="/"
             className="flex items-center gap-2 font-bold text-xl tracking-tight"
           >
-            <span className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white">
-              R
-            </span>
+            <div className="relative w-8 h-8 rounded-lg overflow-hidden">
+              <Image
+                src="/logoRudaLaRola.png"
+                alt="Rueda la Rola Logo"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
             <span>Rueda la Rola</span>
           </Link>
 
