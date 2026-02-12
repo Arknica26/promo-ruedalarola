@@ -87,7 +87,7 @@ export function SalesWidget({
           className="fixed bottom-24 right-6 w-[350px] h-[500px] bg-black/90 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden"
         >
           {/* Header */}
-          <div className="p-4 bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-between">
+          <div className="p-4 bg-linear-to-r from-indigo-600 to-purple-600 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="relative">
                 <div className="w-2 h-2 absolute bottom-0 right-0 bg-green-500 rounded-full border border-white"></div>
@@ -124,7 +124,7 @@ export function SalesWidget({
                   className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
                     msg.role === "user"
                       ? "bg-indigo-600 text-white rounded-br-none"
-                      : "bg-white/10 text-gray-200 rounded-bl-none border border-white/5"
+                      : "bg-white/10 text-white rounded-bl-none border border-white/5"
                   }`}
                 >
                   {msg.text}
