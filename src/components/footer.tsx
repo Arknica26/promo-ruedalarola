@@ -80,9 +80,9 @@ export function Footer() {
             </ul>
           </div>
         </div>
-        <div className="mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-center gap-4">
           <p className="text-sm text-gray-500">{t.footer.copyright}</p>
-          <div className="flex gap-4">
+          {/* <div className="flex gap-4">
             <Link
               href="#"
               className="text-gray-400 hover:text-white transition-colors"
@@ -101,7 +101,7 @@ export function Footer() {
             >
               <Linkedin className="w-5 h-5" />
             </Link>
-          </div>
+          </div> */}
         </div>
       </div>
     </footer>

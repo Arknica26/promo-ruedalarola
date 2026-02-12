@@ -54,7 +54,7 @@ export function Navbar() {
                 priority
               />
             </div>
-            <span>Rueda la Rola</span>
+            <span>Rueda la Rola Media</span>
           </Link>
 
           {/* Desktop Nav */}
@@ -83,7 +83,7 @@ export function Navbar() {
 
             {/* External Link */}
             <Link
-              href="https://ruedalarola.com"
+              href="https://ruedalarolamedia.com/"
               target="_blank"
               className="group flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black text-sm font-bold hover:bg-gray-200 transition-colors"
             >
@@ -139,7 +139,7 @@ export function Navbar() {
             </button>
 
             <Link
-              href="https://ruedalarola.com"
+              href="https://ruedalarolamedia.com/"
               target="_blank"
               className="flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-white text-black font-bold"
             >
