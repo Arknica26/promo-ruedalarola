@@ -19,6 +19,8 @@ export const metadata: Metadata = {
 
 import { LanguageProvider } from "@/lib/i18n-context";
 
+import { FloatingChat } from "@/components/floating-chat";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,7 +31,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <LanguageProvider>{children}</LanguageProvider>
+        <LanguageProvider>
+          {children}
+          <FloatingChat />
+        </LanguageProvider>
       </body>
     </html>
   );
