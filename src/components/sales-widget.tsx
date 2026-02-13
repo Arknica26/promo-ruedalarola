@@ -39,42 +39,35 @@ export function SalesWidget({
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate AI delay
-    setTimeout(() => {
-      let botResponse = "";
-      const lowerMsg = userMsg.toLowerCase();
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMsg }),
+      });
 
-      // Simple logic (Placeholder for real AI)
-      if (
-        lowerMsg.includes("precio") ||
-        lowerMsg.includes("costo") ||
-        lowerMsg.includes("plan")
-      ) {
+      const data = await response.json();
+      let botResponse = data.answer;
+
+      // Handle special transfer token
+      if (botResponse === "TRANSFER_AGENT") {
         botResponse =
-          "Tenemos planes desde $99 USD (Pago Único). \n\n1. Estándar ($99): Web + Catálogo.\n2. Pro ($499): Web + Catálogo Ilimitado + Bot Admin.\n\n¿Te interesa alguno?";
-      } else if (lowerMsg.includes("hola") || lowerMsg.includes("buenas")) {
-        botResponse =
-          "¡Hola de nuevo! ¿Te gustaría ver una demo o cotizar tu web?";
-      } else if (lowerMsg.includes("demo") || lowerMsg.includes("ver")) {
-        botResponse =
-          "¡Claro! Estás navegando en una demo ahora mismo. Nuestra IA puede automatizar tus ventas. ¿Quieres hablar con un asesor humano?";
-      } else if (
-        lowerMsg.includes("si") ||
-        lowerMsg.includes("quiero") ||
-        lowerMsg.includes("asesor") ||
-        lowerMsg.includes("humano")
-      ) {
-        botResponse =
-          "Perfecto. Te transferiré con un especialista por WhatsApp para cerrar tu proyecto.";
-        // Trigger WhatsApp redirection here or show button
-      } else {
-        botResponse =
-          "Entiendo. Soy una IA entrenada para ventas. Si tienes una consulta específica, puedo transferirte a nuestro WhatsApp oficial.";
+          "¡Entendido! Te transferiré con un agente humano ahora mismo.";
+        // Optional: trigger window.open("https://wa.me/...") here
+        setTimeout(() => {
+          window.open("https://wa.me/14694286018", "_blank");
+        }, 1500);
       }
 
       setMessages((prev) => [...prev, { role: "bot", text: botResponse }]);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        { role: "bot", text: "Error de conexión. Intenta más tarde." },
+      ]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -127,7 +120,21 @@ export function SalesWidget({
                       : "bg-white/10 text-white rounded-bl-none border border-white/5"
                   }`}
                 >
-                  {msg.text}
+                  {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) =>
+                    part.match(/https?:\/\/[^\s]+/) ? (
+                      <a
+                        key={i}
+                        href={part}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 underline hover:text-blue-300 break-all"
+                      >
+                        {part}
+                      </a>
+                    ) : (
+                      part
+                    ),
+                  )}
                 </div>
               </div>
             ))}

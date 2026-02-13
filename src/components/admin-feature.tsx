@@ -1,8 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, Edit3, MessageSquare, Smartphone, Zap } from "lucide-react";
-import Image from "next/image";
+import { Check, CheckCircle2, Lock, Zap } from "lucide-react";
 import { useLanguage } from "@/lib/i18n-context";
 
 export function AdminFeature() {

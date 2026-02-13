@@ -48,18 +48,30 @@ export function Footer() {
             <h4 className="font-bold mb-4">{t.footer.company}</h4>
             <ul className="space-y-2 text-sm text-gray-400">
               <li>
-                <Link href="#" className="hover:text-white transition-colors">
-                  Sobre Nosotros
+                <Link
+                  href="https://ruedalarolamedia.com/#Nosotros"
+                  target="_blank"
+                  className="hover:text-white transition-colors"
+                >
+                  {t.footer.about}
                 </Link>
               </li>
+              {/* Blog removed as requested */}
               <li>
-                <Link href="#" className="hover:text-white transition-colors">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="hover:text-white transition-colors">
+                <Link
+                  href="https://wa.me/14694286018"
+                  target="_blank"
+                  className="hover:text-white transition-colors"
+                >
                   {t.footer.contact}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="mailto:support@ruedalarolamedia.com"
+                  className="hover:text-white transition-colors"
+                >
+                  {t.footer.support}
                 </Link>
               </li>
             </ul>
@@ -68,13 +80,19 @@ export function Footer() {
             <h4 className="font-bold mb-4">{t.footer.legal}</h4>
             <ul className="space-y-2 text-sm text-gray-400">
               <li>
-                <Link href="#" className="hover:text-white transition-colors">
-                  Privacidad
+                <Link
+                  href="/privacy"
+                  className="hover:text-white transition-colors"
+                >
+                  {t.footer.privacy}
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-white transition-colors">
-                  Términos
+                <Link
+                  href="/terms"
+                  className="hover:text-white transition-colors"
+                >
+                  {t.footer.terms}
                 </Link>
               </li>
             </ul>

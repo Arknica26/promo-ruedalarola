@@ -45,9 +45,9 @@ export const translations = {
       realestate_title: "Inmobiliarias",
       realestate_desc:
         "Catálogo de propiedades. La IA agenda visitas y pre-califica a los interesados.",
-      services_title: "Servicios Profesionales",
+      services_title: "Clínica Dental",
       services_desc:
-        "Abogados, Dentistas, Coaches. Agenda citas y resuelve dudas frecuentes 24/7.",
+        "Citas online, recordatorios automáticos y respuestas a preguntas frecuentes sobre tratamientos.",
       cta_demo: "Ver Demo en Vivo",
     },
     chat: {
@@ -142,11 +142,85 @@ export const translations = {
       product: "Producto",
       company: "Compañía",
       legal: "Legal",
-      contact: "Contacto",
+      contact: "Contacto (WhatsApp)",
+      support: "Soporte (Email)",
       copyright: "© 2024 Rueda la Rola. Todos los derechos reservados.",
+      about: "Sobre Nosotros",
+      privacy: "Privacidad",
+      terms: "Términos",
+    },
+    legal_docs: {
+      privacy: {
+        title: "Política de Privacidad",
+        intro_title: "1. Introducción",
+        intro_text:
+          "Bienvenido a Rueda la Rola. Nos comprometemos a proteger su información personal y su derecho a la privacidad. Si tiene alguna pregunta o inquietud sobre nuestra política o nuestras prácticas con respecto a su información personal, contáctenos en nuestro WhatsApp oficial: +1 (469) 428-6018 o vía email a support@ruedalarolamedia.com.",
+        collection_title: "2. Información que recopilamos",
+        collection_text:
+          "Recopilamos información personal que usted nos proporciona voluntariamente cuando expresa interés en obtener información sobre nosotros o nuestros productos y servicios, cuando participa en actividades en el Sitio Web o de otra manera cuando se comunica con nosotros.",
+        use_title: "3. Uso de su información",
+        use_text:
+          "Procesamos su información para fines basados en intereses comerciales legítimos, el cumplimiento de nuestro contrato con usted, el cumplimiento de nuestras obligaciones legales y/o su consentimiento.",
+        contact_title: "4. Contacto",
+        contact_text:
+          "Si tiene preguntas sobre esta política, puede contactarnos a través de nuestro canal de WhatsApp o visitando nuestro sitio principal en ruedalarolamedia.com.",
+      },
+      terms: {
+        title: "Términos y Condiciones",
+        acceptance_title: "1. Aceptación de los Términos",
+        acceptance_text:
+          "Al acceder y utilizar este sitio web, usted acepta estar sujeto a estos Términos y Condiciones de Uso, todas las leyes y regulaciones aplicables, y acepta que es responsable del cumplimiento de las leyes locales aplicables.",
+        license_title: "2. Licencia de Uso",
+        license_text:
+          "Se otorga permiso para descargar temporalmente una copia de los materiales (información o software) en el sitio web de Rueda la Rola solo para visualización transitoria personal y no comercial.",
+        limitations_title: "3. Limitaciones",
+        limitations_text:
+          "En ningún caso Rueda la Rola o sus proveedores serán responsables de ningún daño (incluidos, entre otros, daños por pérdida de datos o ganancias, o debido a la interrupción del negocio) que surjan del uso o la imposibilidad de usar los materiales en el sitio web de Rueda la Rola.",
+        modifications_title: "4. Modificaciones",
+        modifications_text:
+          "Rueda la Rola puede revisar estos términos de servicio para su sitio web en cualquier momento sin previo aviso. Al utilizar este sitio web, usted acepta estar sujeto a la versión actual de estos términos de servicio.",
+        contact_title: "5. Contacto",
+        contact_text:
+          "Cualquier duda sobre estos términos puede ser remitida a nuestro equipo de soporte legal en: support@ruedalarolamedia.com.",
+      },
     },
   },
   en: {
+    legal_docs: {
+      privacy: {
+        title: "Privacy Policy",
+        intro_title: "1. Introduction",
+        intro_text:
+          "Welcome to Rueda la Rola. We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about our policy or our practices regarding your personal information, please contact us at our official WhatsApp: +1 (469) 428-6018 or via email at support@ruedalarolamedia.com.",
+        collection_title: "2. Information We Collect",
+        collection_text:
+          "We collect personal information that you voluntarily provide to us when expressing interest in obtaining information about us or our products and services, when participating in activities on the Website, or otherwise contacting us.",
+        use_title: "3. How We Use Your Information",
+        use_text:
+          "We process your information for purposes based on legitimate business interests, the fulfillment of our contract with you, compliance with our legal obligations, and/or your consent.",
+        contact_title: "4. Contact",
+        contact_text:
+          "If you have questions about this policy, you may contact us via our WhatsApp channel or by visiting our main site at ruedalarolamedia.com.",
+      },
+      terms: {
+        title: "Terms and Conditions",
+        acceptance_title: "1. Acceptance of Terms",
+        acceptance_text:
+          "By accessing and using this website, you accept and agree to be bound by the terms and provision of this agreement...",
+        license_title: "2. Use License",
+        license_text:
+          "Permission is granted to temporarily download one copy of the materials...",
+        limitations_title: "3. Limitations",
+        limitations_text:
+          "In no event shall Rueda la Rola be liable for any damages...",
+        modifications_title: "4. Modifications",
+        modifications_text:
+          "Rueda la Rola may revise these terms of service at any time without notice...",
+        contact_title: "5. Contact",
+        contact_text:
+          "Any questions regarding these terms can be directed to our legal support team at: support@ruedalarolamedia.com.",
+      },
+    },
     nav: {
       howItWorks: "How it Works",
       demos: "Demos",
@@ -190,9 +264,9 @@ export const translations = {
       realestate_title: "Real Estate",
       realestate_desc:
         "Property catalog. AI schedules visits and pre-qualifies leads.",
-      services_title: "Professional Services",
+      services_title: "Dental Clinic",
       services_desc:
-        "Lawyers, Dentists, Coaches. Schedule appointments and answer FAQs 24/7.",
+        "Online scheduling, automated reminders, and FAQs about treatments.",
       cta_demo: "View Live Demo",
     },
     chat: {
@@ -228,7 +302,7 @@ export const translations = {
       msg_bot_1_title: "✅ Updated:",
       msg_bot_1_desc: "Classic Burger now costs $12.00",
       msg_user_2: "Pause Pizza sales",
-      msg_bot_2_title: "🚫 Product Paused:",
+      msg_bot_2_title: "🚫 Producto Paused:",
       msg_bot_2_desc: "'Pepperoni Pizza' no longer appears in the catalog.",
     },
     pricing: {
@@ -289,7 +363,11 @@ export const translations = {
       company: "Company",
       legal: "Legal",
       contact: "Contact",
+      support: "Support",
       copyright: "© 2024 Rueda la Rola. All rights reserved.",
+      about: "About Us",
+      privacy: "Privacy",
+      terms: "Terms",
     },
   },
 };

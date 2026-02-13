@@ -25,7 +25,7 @@ export function DemoChat() {
         content: t.chat.bot_intro,
       },
     ]);
-  }, [t]);
+  }, [t.chat.bot_intro]);
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {

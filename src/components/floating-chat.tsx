@@ -2,9 +2,11 @@
 
 import { MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { SalesWidget } from "./sales-widget";
 
 export function FloatingChat() {
+  const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -13,6 +15,12 @@ export function FloatingChat() {
     return () => clearTimeout(timer);
   }, []);
 
+  const isDemoPage =
+    pathname?.startsWith("/client-demo") ||
+    pathname?.startsWith("/real-estate-demo") ||
+    pathname?.startsWith("/dental-demo");
+
+  if (isDemoPage) return null;
   if (!isVisible) return null;
 
   return (

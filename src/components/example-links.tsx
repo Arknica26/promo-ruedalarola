@@ -14,21 +14,21 @@ export function ExampleLinks() {
       description: t.examples.restaurants_desc,
       icon: Utensils,
       color: "bg-orange-500",
-      link: "/client-demo", // Using existing demo
+      link: "/client-demo",
     },
     {
       title: t.examples.realestate_title,
       description: t.examples.realestate_desc,
       icon: Home,
-      color: "bg-blue-500",
+      color: "bg-blue-600",
       link: "/real-estate-demo",
     },
     {
       title: t.examples.services_title,
       description: t.examples.services_desc,
       icon: Briefcase,
-      color: "bg-purple-500",
-      link: "#",
+      color: "bg-[#2A9D8F]",
+      link: "/dental-demo",
     },
   ];
 
