@@ -3,10 +3,10 @@ import { google } from "googleapis";
 // Authenticate with Service Account
 // Supports both local file (dev) and Env Var (prod/Vercel)
 const auth = new google.auth.GoogleAuth({
-  credentials: process.env.GOOGLE_SERVICE_ACCOUNT_JSON
-    ? JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON)
+  credentials: process.env.GOOGLE_SERVICE_ACCOUNT_KEYS
+    ? JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEYS)
     : undefined,
-  keyFile: !process.env.GOOGLE_SERVICE_ACCOUNT_JSON
+  keyFile: !process.env.GOOGLE_SERVICE_ACCOUNT_KEYS
     ? "service-account.json"
     : undefined,
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
