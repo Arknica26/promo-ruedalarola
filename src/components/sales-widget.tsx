@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { X, Send, MessageCircle } from "lucide-react";
+import { useRef, useEffect, useState } from "react";
+import { X, Send, MessageCircle, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useChat } from "@ai-sdk/react";
 
 export function SalesWidget({
   isOpen,
@@ -11,62 +12,56 @@ export function SalesWidget({
   isOpen: boolean;
   onClose: () => void;
 }) {
-  const [messages, setMessages] = useState<
-    { role: "bot" | "user"; text: string }[]
-  >([
-    {
-      role: "bot",
-      text: "¡Hola! 👋 Soy la IA de Rueda la Rola. ¿En qué puedo ayudarte hoy? ¿Buscas crear tu sitio web o ver nuestros planes?",
-    },
-  ]);
-  const [inputValue, setInputValue] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [inputValue, setInputValue] = useState("");
+
+  const { messages, status, sendMessage } = useChat({
+    // @ts-ignore
+    api: "/api/chat",
+    maxSteps: 5,
+    streamProtocol: "text",
+    initialMessages: [
+      {
+        id: "intro",
+        role: "assistant",
+        content:
+          "¡Hola! 👋 Soy la IA de Rueda la Rola. ¿En qué puedo ayudarte hoy? ¿Buscas crear tu sitio web o ver nuestros planes?",
+      },
+    ],
+  });
+
+  const isLoading = status === "submitted" || status === "streaming";
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
+    console.log("Chat State:", {
+      status,
+      messagesLength: messages.length,
+      lastMessage: messages[messages.length - 1],
+    });
     scrollToBottom();
-  }, [messages, isTyping]);
+  }, [messages, status]);
 
-  const handleSend = async () => {
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!inputValue.trim()) return;
 
-    const userMsg = inputValue;
-    setMessages((prev) => [...prev, { role: "user", text: userMsg }]);
+    const newMessage = {
+      role: "user" as const,
+      content: inputValue,
+      id: Date.now().toString(),
+      parts: [{ type: "text", text: inputValue }],
+    };
+
     setInputValue("");
-    setIsTyping(true);
 
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMsg }),
-      });
-
-      const data = await response.json();
-      let botResponse = data.answer;
-
-      // Handle special transfer token
-      if (botResponse === "TRANSFER_AGENT") {
-        botResponse =
-          "¡Entendido! Te transferiré con un agente humano ahora mismo.";
-        // Optional: trigger window.open("https://wa.me/...") here
-        setTimeout(() => {
-          window.open("https://wa.me/14694286018", "_blank");
-        }, 1500);
-      }
-
-      setMessages((prev) => [...prev, { role: "bot", text: botResponse }]);
-    } catch (error) {
-      setMessages((prev) => [
-        ...prev,
-        { role: "bot", text: "Error de conexión. Intenta más tarde." },
-      ]);
-    } finally {
-      setIsTyping(false);
+      await sendMessage(newMessage as any);
+    } catch (err) {
+      console.error("Failed to send message:", err);
     }
   };
 
@@ -104,11 +99,10 @@ export function SalesWidget({
             </button>
           </div>
 
-          {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((msg, idx) => (
+            {messages.map((msg) => (
               <div
-                key={idx}
+                key={msg.id}
                 className={`flex ${
                   msg.role === "user" ? "justify-end" : "justify-start"
                 }`}
@@ -120,45 +114,39 @@ export function SalesWidget({
                       : "bg-white/10 text-white rounded-bl-none border border-white/5"
                   }`}
                 >
-                  {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) =>
-                    part.match(/https?:\/\/[^\s]+/) ? (
-                      <a
-                        key={i}
-                        href={part}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-400 underline hover:text-blue-300 break-all"
-                      >
-                        {part}
-                      </a>
-                    ) : (
-                      part
-                    ),
-                  )}
+                  {(msg.content || "")
+                    .split(/(https?:\/\/[^\s]+)/g)
+                    .map((part, i) =>
+                      part.match(/https?:\/\/[^\s]+/) ? (
+                        <a
+                          key={i}
+                          href={part}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 underline hover:text-blue-300 break-all"
+                        >
+                          {part}
+                        </a>
+                      ) : (
+                        part
+                      ),
+                    )}
                 </div>
               </div>
             ))}
-            {isTyping && (
+            {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-white/10 p-3 rounded-2xl rounded-bl-none border border-white/5 flex gap-1">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                <div className="bg-white/10 p-3 rounded-2xl rounded-bl-none border border-white/5 flex gap-1 items-center">
+                  <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
+                  <span className="text-xs text-gray-400">Escribiendo...</span>
                 </div>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
-
           {/* Input */}
           <div className="p-4 border-t border-white/10 bg-black/50">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSend();
-              }}
-              className="flex gap-2"
-            >
+            <form onSubmit={handleSendMessage} className="flex gap-2">
               <input
                 type="text"
                 value={inputValue}
@@ -168,7 +156,7 @@ export function SalesWidget({
               />
               <button
                 type="submit"
-                disabled={!inputValue.trim() || isTyping}
+                disabled={!inputValue.trim() || isLoading}
                 className="p-2 bg-indigo-600 rounded-full text-white hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="w-5 h-5" />

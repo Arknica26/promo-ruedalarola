@@ -1,68 +1,106 @@
-import { NextResponse } from "next/server";
-import { processMessage } from "@/lib/ai-logic";
-import { appendRow } from "@/lib/google-sheets";
+import { streamText, tool as createTool } from "ai";
+import { primaryModel, secondaryModel } from "@/lib/ai/model-rotation";
+import { saveLeadTool } from "@/lib/ai/tools";
+import { readFileSync } from "fs";
+import path from "path";
+
+// Allow streaming responses up to 30 seconds
+export const maxDuration = 30;
 
 export async function POST(req: Request) {
+  console.log("--- Chat API Request Started ---");
   try {
-    const { message } = await req.json();
+    const { messages } = await req.json();
+    console.log(`Received ${messages.length} messages`);
 
-    // 1. Validate Input
-    if (!message) {
-      return NextResponse.json(
-        { error: "Message is required" },
-        { status: 400 },
+    // 1. Load Knowledge Base
+    const kbPath = path.join(process.cwd(), "conocimiento_empresa.md");
+    const knowledgeBase = readFileSync(kbPath, "utf-8");
+    console.log("Knowledge Base loaded successfully");
+
+    // 2. Define System Prompt
+    const systemPrompt = `
+      Eres el asistente virtual de "Rueda La Rola Media". 
+      Tu objetivo principal es asistir al usuario y, si muestra interés, obtener su Nombre, Teléfono, Correo y Asunto.
+      
+      BASE DE CONOCIMIENTO (La Biblia):
+      ${knowledgeBase}
+      
+      INSTRUCCIONES:
+      - Responde siempre basándote en la "La Biblia". No inventes información.
+      - Si la respuesta no está en el texto, ofrece contactar a un humano.
+      - Sé amable, persuasivo y profesional.
+      - Si el usuario te da sus datos (Nombre, Teléfono, Email, Asunto), usa la herramienta "saveLeadTool" inmediatamente para guardarlos.
+      - IMPORTANTE: Si falla el modelo principal, no lo menciones, solo sigue conversando.
+    `;
+
+    // 3. Attempt with Primary Model (Gemini)
+    try {
+      console.log("Attempting Primary Model (Gemini)...");
+      const result = await streamText({
+        model: primaryModel,
+        system: systemPrompt,
+        messages,
+        tools: {
+          saveLead: saveLeadTool,
+        },
+        maxRetries: 0,
+        onFinish: ({ text, toolCalls, toolResults, finishReason, usage }) => {
+          console.log("Primary Model Finish:", {
+            text,
+            toolCalls,
+            toolResults,
+            finishReason,
+            usage,
+          });
+        },
+      });
+      console.log("Primary Model responded successfully");
+      console.log("Result keys:", Object.keys(result));
+      console.log(
+        "Result prototype:",
+        Object.getOwnPropertyNames(Object.getPrototypeOf(result)),
       );
-    }
-
-    // 1. Basic Logging (Fire and Forget)
-    const logsSheetId = process.env.GOOGLE_SHEET_LOGS_ID;
-    if (logsSheetId) {
-      // Append row: [Date, Role, Message]
-      // We log the User message first
-      try {
-        await appendRow(logsSheetId, "Sheet1!A:C", [
-          new Date().toISOString(),
-          "USER",
-          message,
-        ]);
-      } catch (e) {
-        console.error("Failed to log user message", e);
-      }
-    }
-
-    // 2. Process Message (Get Answer - Instant Local)
-    const answer = await processMessage(message);
-
-    // 3. Log Interaction (Async - we don't block response strictly on this success,
-    // but in serverless we must await to ensure execution.
-    // We run log calls in parallel to speed up.)
-    if (logsSheetId) {
-      const logUser = appendRow(logsSheetId, "Hoja 1!A:C", [
-        new Date().toISOString(),
-        "USER",
-        message,
-      ]);
-      const logBot = appendRow(logsSheetId, "Hoja 1!A:C", [
-        new Date().toISOString(),
-        "BOT",
-        answer,
-      ]);
-
-      // Best effort: wait for both but catch errors so we don't fail request
-      Promise.all([logUser, logBot]).catch((err) =>
-        console.error("Logging failed", err),
+      // Falling back to toTextStreamResponse to see if text appears at all
+      return result.toTextStreamResponse();
+    } catch (primaryError) {
+      console.error(
+        "Primary Model Failed, switching to Secondary:",
+        primaryError,
       );
-    }
 
-    return NextResponse.json({ answer });
+      // 4. Fallback to Secondary Model (Groq/Llama)
+      console.log("Attempting Secondary Model (Groq)...");
+      const result = await streamText({
+        model: secondaryModel,
+        system: systemPrompt,
+        messages,
+        tools: {
+          saveLead: saveLeadTool,
+        },
+        onFinish: ({ text, toolCalls, toolResults, finishReason, usage }) => {
+          console.log("Secondary Model Finish:", {
+            text,
+            toolCalls,
+            toolResults,
+            finishReason,
+            usage,
+          });
+        },
+      });
+      console.log("Secondary Model responded successfully");
+      return result.toTextStreamResponse();
+    }
   } catch (error) {
-    console.error("Chat API Error:", error);
-    return NextResponse.json(
-      {
-        answer:
-          "Lo siento, tuve un problema de conexión. ¿Puedes intentar de nuevo?",
-      },
-      { status: 500 },
+    console.error("Chat API Fatal Error:", error);
+    return new Response(
+      JSON.stringify({
+        error: "Internal Server Error",
+        details: String(error),
+      }),
+      { status: 500, headers: { "Content-Type": "application/json" } },
     );
+  } finally {
+    console.log("--- Chat API Request Ended ---");
   }
 }

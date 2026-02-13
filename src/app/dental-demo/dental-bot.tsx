@@ -1,58 +1,64 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { X, MessageCircle, Calendar, Send, User, Clock } from "lucide-react";
+import {
+  X,
+  MessageCircle,
+  Calendar,
+  Send,
+  User,
+  Clock,
+  Loader2,
+} from "lucide-react";
+import { useChat } from "@ai-sdk/react";
 
 export const DentalBot = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    { type: "bot", text: "Welcome to Lumina Dental Spa. 🦷" },
-    {
-      type: "bot",
-      text: "I'm Dr. AI. How can I assist with your smile today?",
-    },
-  ]);
-  const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const { messages, status, sendMessage } = useChat({
+    api: "/api/chat",
+    initialMessages: [
+      {
+        id: "intro",
+        role: "assistant",
+        content:
+          "Welcome to Lumina Dental Spa. 🦷 I'm Dr. AI. How can I assist with your smile today?",
+      },
+    ],
+  });
+
+  const isLoading = status === "submitted" || status === "streaming";
 
   const toggleChat = () => setIsOpen(!isOpen);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, status]);
 
-  const handleSendMessage = (text: string) => {
-    if (!text.trim()) return;
-
-    const newMessages = [...messages, { type: "user", text }];
-    setMessages(newMessages);
-    setInputValue("");
-
-    // Simple auto-reply logic
-    setTimeout(() => {
-      let botReply = { type: "bot", text: "" };
-      const lowerText = text.toLowerCase();
-
-      if (lowerText.includes("book") || lowerText.includes("appointment")) {
-        botReply.text =
-          "I can help with that. Please select your preferred date/time below or call us directly at (555) 123-4567.";
-        // In a real app, we'd show a calendar widget here
-      } else if (lowerText.includes("price") || lowerText.includes("cost")) {
-        botReply.text =
-          "Our initial consultation starts at $150. For specific treatments like Invisalign or Veneers, we recommend a personalized assessment.";
-      } else if (lowerText.includes("whitening")) {
-        botReply.text =
-          "We offer gentle, laser-assisted whitening sessions. They take about an hour and results are immediate! ✨";
-      } else {
-        botReply.text =
-          "Thank you for your inquiry. A patient coordinator will be with you shortly to answer that in detail.";
-      }
-      setMessages((prev) => [...prev, botReply]);
-    }, 1000);
-  };
+  const [inputValue, setInputValue] = useState("");
 
   const handleOptionClick = (option: string) => {
-    handleSendMessage(option);
+    sendMessage({ role: "user", content: option, id: Date.now().toString() });
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputValue.trim()) return;
+
+    const newMessage = {
+      role: "user" as const,
+      content: inputValue,
+      id: Date.now().toString(),
+    };
+
+    setInputValue("");
+
+    try {
+      await sendMessage(newMessage);
+    } catch (err) {
+      console.error("Failed to send message:", err);
+    }
   };
 
   return (
@@ -102,27 +108,38 @@ export const DentalBot = () => {
 
           {/* Chat Body */}
           <div className="p-4 h-[400px] overflow-y-auto bg-[#F5F5F0] space-y-4 flex flex-col">
-            {messages.map((msg, index) => (
+            {messages.map((msg) => (
               <div
-                key={index}
-                className={`flex gap-3 ${msg.type === "user" ? "justify-end" : ""}`}
+                key={msg.id}
+                className={`flex gap-3 ${msg.role === "user" ? "justify-end" : ""}`}
               >
-                {msg.type === "bot" && (
+                {msg.role === "assistant" && (
                   <div className="w-8 h-8 bg-[#2A9D8F] rounded-full flex items-center justify-center shrink-0 self-end mb-1">
                     <span className="text-white text-xs font-bold">L</span>
                   </div>
                 )}
                 <div
                   className={`p-3 rounded-2xl text-sm max-w-[80%] leading-relaxed shadow-sm ${
-                    msg.type === "bot"
+                    msg.role === "assistant"
                       ? "bg-white text-gray-700 rounded-bl-none"
                       : "bg-[#2A9D8F] text-white rounded-br-none"
                   }`}
                 >
-                  <p>{msg.text}</p>
+                  <div className="whitespace-pre-wrap">{msg.content}</div>
                 </div>
               </div>
             ))}
+            {isLoading && (
+              <div className="flex gap-3">
+                <div className="w-8 h-8 bg-[#2A9D8F] rounded-full flex items-center justify-center shrink-0 self-end mb-1">
+                  <span className="text-white text-xs font-bold">L</span>
+                </div>
+                <div className="p-3 bg-white text-gray-700 rounded-2xl rounded-bl-none shadow-sm flex items-center gap-1">
+                  <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
+                  <span className="text-xs text-gray-400">Typing...</span>
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
 
@@ -150,25 +167,22 @@ export const DentalBot = () => {
 
           {/* Input Area */}
           <div className="p-4 bg-white border-t border-gray-100">
-            <div className="flex gap-2">
+            <form onSubmit={handleSendMessage} className="flex gap-2">
               <input
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={(e) =>
-                  e.key === "Enter" && handleSendMessage(inputValue)
-                }
                 placeholder="Type your message..."
                 className="flex-1 bg-[#F5F5F0] border-none rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#2A9D8F]/50 outline-none placeholder-gray-400"
               />
               <button
-                onClick={() => handleSendMessage(inputValue)}
-                className="bg-[#2A9D8F] hover:bg-[#21867a] text-white p-2 rounded-xl transition-colors"
-                disabled={!inputValue.trim()}
+                type="submit"
+                className="bg-[#2A9D8F] hover:bg-[#21867a] text-white p-2 rounded-xl transition-colors disabled:opacity-50"
+                disabled={!inputValue.trim() || isLoading}
               >
                 <Send className="w-5 h-5" />
               </button>
-            </div>
+            </form>
           </div>
         </div>
       )}

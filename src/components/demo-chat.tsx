@@ -1,76 +1,65 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Bot, Send, User } from "lucide-react";
+import { Bot, Send, User, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useChat } from "@ai-sdk/react";
 import { useLanguage } from "@/lib/i18n-context";
-
-type Message = {
-  role: "bot" | "user";
-  content: string;
-};
 
 export function DemoChat() {
   const { t } = useLanguage();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  // Initialize/Update messages on language change
-  useEffect(() => {
-    setMessages([
+  // Initialize Vercel AI SDK
+  const { messages, status, sendMessage } = useChat({
+    // @ts-ignore
+    api: "/api/chat",
+    initialMessages: [
       {
-        role: "bot",
+        id: "intro",
+        role: "assistant",
         content: t.chat.bot_intro,
       },
-    ]);
-  }, [t.chat.bot_intro]);
+    ],
+  });
 
-  const scrollToBottom = () => {
+  const isLoading = status === "submitted" || status === "streaming";
+
+  const [inputInternal, setInputInternal] = useState("");
+
+  const handleInputChangeInternal = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setInputInternal(e.target.value);
+  };
+
+  const handleSubmitInternal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputInternal.trim()) return;
+
+    const newMessage = {
+      role: "user" as const,
+      content: inputInternal,
+      id: Date.now().toString(),
+      parts: [{ type: "text", text: inputInternal }],
+    };
+
+    setInputInternal("");
+
+    try {
+      await sendMessage(newMessage as any);
+    } catch (err) {
+      console.error("Failed to send message:", err);
+    }
+  };
+
+  // Auto-scroll to bottom
+  useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop =
         chatContainerRef.current.scrollHeight;
     }
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isTyping]);
-
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
-
-    const userMsg: Message = { role: "user", content: inputValue };
-    setMessages((prev) => [...prev, userMsg]);
-    setInputValue("");
-    setIsTyping(true);
-
-    // Simulate AI delay and response
-    setTimeout(() => {
-      let botResponse = "Thinking...";
-      if (
-        inputValue.toLowerCase().includes("price") ||
-        inputValue.toLowerCase().includes("cost") ||
-        inputValue.toLowerCase().includes("precio") ||
-        inputValue.toLowerCase().includes("costo")
-      ) {
-        botResponse = t.chat.bot_price_response;
-      } else if (
-        inputValue.toLowerCase().includes("catalogo") ||
-        inputValue.toLowerCase().includes("catalog") ||
-        inputValue.toLowerCase().includes("ver") ||
-        inputValue.toLowerCase().includes("see")
-      ) {
-        botResponse = t.chat.bot_catalog_response;
-      } else {
-        botResponse = t.chat.bot_hello_response;
-      }
-
-      setMessages((prev) => [...prev, { role: "bot", content: botResponse }]);
-      setIsTyping(false);
-    }, 1500);
-  };
+  }, [messages, status]);
 
   return (
     <section id="demo" className="py-24 bg-background relative overflow-hidden">
@@ -104,38 +93,48 @@ export function DemoChat() {
             ref={chatContainerRef}
             className="h-[400px] p-4 overflow-y-auto bg-black/20 flex flex-col gap-4 scroll-smooth"
           >
-            {messages.map((msg, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                    msg.role === "bot"
-                      ? "bg-primary text-white"
-                      : "bg-gray-700 text-white"
-                  }`}
+            {messages.map((msg) => {
+              const content =
+                msg.content ||
+                (msg as any).parts?.map((p: any) => p.text).join("") ||
+                "";
+              return (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
                 >
-                  {msg.role === "bot" ? (
-                    <Bot className="w-5 h-5" />
-                  ) : (
-                    <User className="w-5 h-5" />
-                  )}
-                </div>
-                <div
-                  className={`p-3 rounded-2xl max-w-[80%] text-sm ${
-                    msg.role === "bot"
-                      ? "bg-white/10 text-gray-100 rounded-tl-none"
-                      : "bg-primary text-white rounded-tr-none"
-                  }`}
-                >
-                  <p className="whitespace-pre-line">{msg.content}</p>
-                </div>
-              </motion.div>
-            ))}
-            {isTyping && (
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                      msg.role === "assistant"
+                        ? "bg-primary text-white"
+                        : "bg-gray-700 text-white"
+                    }`}
+                  >
+                    {msg.role === "assistant" ? (
+                      <Bot className="w-5 h-5" />
+                    ) : (
+                      <User className="w-5 h-5" />
+                    )}
+                  </div>
+                  <div
+                    className={`p-3 rounded-2xl max-w-[80%] text-sm ${
+                      msg.role === "assistant"
+                        ? "bg-white/10 text-gray-100 rounded-tl-none"
+                        : "bg-primary text-white rounded-tr-none"
+                    }`}
+                  >
+                    <p className="whitespace-pre-line leading-relaxed">
+                      {content}
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            })}
+
+            {/* Loading Indicator */}
+            {isLoading && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -145,9 +144,10 @@ export function DemoChat() {
                   <Bot className="w-5 h-5 text-white" />
                 </div>
                 <div className="bg-white/10 p-3 rounded-2xl rounded-tl-none flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" />
+                  <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                  <span className="text-xs text-gray-400 italic">
+                    Escribiendo...
+                  </span>
                 </div>
               </motion.div>
             )}
@@ -156,23 +156,19 @@ export function DemoChat() {
 
           {/* Input Area */}
           <div className="p-4 bg-card border-t border-border">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSendMessage();
-              }}
-              className="flex gap-2"
-            >
+            <form onSubmit={handleSubmitInternal} className="flex gap-2">
               <input
                 type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder={t.chat.input_placeholder}
+                value={inputInternal}
+                onChange={handleInputChangeInternal}
+                placeholder={
+                  t.chat.input_placeholder || "Escribe un mensaje..."
+                }
                 className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
               <button
                 type="submit"
-                disabled={!inputValue.trim() || isTyping}
+                disabled={!inputInternal.trim() || isLoading}
                 className="p-2 bg-primary rounded-full text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Send className="w-5 h-5" />
