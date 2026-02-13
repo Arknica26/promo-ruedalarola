@@ -11,9 +11,10 @@ export function DemoChat() {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Initialize Vercel AI SDK
-  const { messages, status, sendMessage } = useChat({
+  const { messages, status, input, handleInputChange, handleSubmit } = useChat({
     // @ts-ignore
     api: "/api/chat",
+    streamProtocol: "data",
     initialMessages: [
       {
         id: "intro",
@@ -24,34 +25,6 @@ export function DemoChat() {
   });
 
   const isLoading = status === "submitted" || status === "streaming";
-
-  const [inputInternal, setInputInternal] = useState("");
-
-  const handleInputChangeInternal = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setInputInternal(e.target.value);
-  };
-
-  const handleSubmitInternal = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputInternal.trim()) return;
-
-    const newMessage = {
-      role: "user" as const,
-      content: inputInternal,
-      id: Date.now().toString(),
-      parts: [{ type: "text", text: inputInternal }],
-    };
-
-    setInputInternal("");
-
-    try {
-      await sendMessage(newMessage as any);
-    } catch (err) {
-      console.error("Failed to send message:", err);
-    }
-  };
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -94,10 +67,7 @@ export function DemoChat() {
             className="h-[400px] p-4 overflow-y-auto bg-black/20 flex flex-col gap-4 scroll-smooth"
           >
             {messages.map((msg) => {
-              const content =
-                msg.content ||
-                (msg as any).parts?.map((p: any) => p.text).join("") ||
-                "";
+              const content = msg.content;
               return (
                 <motion.div
                   key={msg.id}
@@ -156,11 +126,11 @@ export function DemoChat() {
 
           {/* Input Area */}
           <div className="p-4 bg-card border-t border-border">
-            <form onSubmit={handleSubmitInternal} className="flex gap-2">
+            <form onSubmit={handleSubmit} className="flex gap-2">
               <input
                 type="text"
-                value={inputInternal}
-                onChange={handleInputChangeInternal}
+                value={input}
+                onChange={handleInputChange}
                 placeholder={
                   t.chat.input_placeholder || "Escribe un mensaje..."
                 }
@@ -168,7 +138,7 @@ export function DemoChat() {
               />
               <button
                 type="submit"
-                disabled={!inputInternal.trim() || isLoading}
+                disabled={!input?.trim() || isLoading}
                 className="p-2 bg-primary rounded-full text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Send className="w-5 h-5" />

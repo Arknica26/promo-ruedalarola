@@ -19,7 +19,6 @@ export function SalesWidget({
     // @ts-ignore
     api: "/api/chat",
     maxSteps: 5,
-    streamProtocol: "text",
     initialMessages: [
       {
         id: "intro",

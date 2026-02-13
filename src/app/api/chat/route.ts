@@ -56,13 +56,9 @@ export async function POST(req: Request) {
         },
       });
       console.log("Primary Model responded successfully");
-      console.log("Result keys:", Object.keys(result));
-      console.log(
-        "Result prototype:",
-        Object.getOwnPropertyNames(Object.getPrototypeOf(result)),
-      );
-      // Falling back to toTextStreamResponse to see if text appears at all
-      return result.toTextStreamResponse();
+
+      // Falling back to toUIMessageStreamResponse (standard data stream)
+      return result.toUIMessageStreamResponse();
     } catch (primaryError) {
       console.error(
         "Primary Model Failed, switching to Secondary:",
@@ -89,7 +85,8 @@ export async function POST(req: Request) {
         },
       });
       console.log("Secondary Model responded successfully");
-      return result.toTextStreamResponse();
+
+      return result.toUIMessageStreamResponse();
     }
   } catch (error) {
     console.error("Chat API Fatal Error:", error);
